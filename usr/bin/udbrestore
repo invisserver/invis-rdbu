@@ -1,0 +1,13 @@
+#!/bin/bash
+# Dieses Script bereitet eine Rücksicherung von Daten einer udevsync oder udevbu Festplatte vor.
+# (C) 2009 invis-server.org
+# Author: Stefan Schäfer
+# License: GPLv3
+# Questions: http://forum.invis-server.org
+# Das Script muss gestartet werden bevor eine Sicherungsplatte 
+# zwecks Rücksicherung an den Server angeschlossen wird.
+
+# Die Datei restore wird in /var/spool/results/backup angelegt.
+echo "1" > /var/spool/results/backup/restore
+
+# nothing else happens ;-)

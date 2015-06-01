@@ -1,0 +1,91 @@
+## invis-rdbu
+(c) 2014 Stefan Schäfer -- invis-server.org
+Version 0.6
+Lizenz: GPLv3
+
+Kern des neuen invis-Backup-Tools ist das Programm rdiff-backup.
+Im Unterschied zum Vorgänger udevsync ist es jetzt möglich auch
+frührere Revisionen gesicherter Dateien wiederherzustellen.
+
+Ebenfalls neu ist, dass als Basis für die Sicherung ein LV-Snap-
+shot angelegt wird. Dies sichert die Konsistenz des Backups auch 
+für Datenbanken, den Cyrus-IMAP-Store oder Images von virtuellen
+Maschinen.
+
+Bekannte Fehler:
+Aus bisher ungeklärtem Grund funktioniert das Aushängen des
+Sicherungssnapshots nicht (zuverlässig). Dies wird allerdings mit
+der Methode "verdammte Sturheit" umgangen. Es wird solange 
+versucht den Snapshot auszuhängen, bis es gelingt.
+
+Installation und Anwendung:
+Nach der Installation sollte zunächst eine Konfigurationsdatei
+erstellt werden. Hierzu existieren zwei Tools:
+    - udbconf -> Konfiguriert die Sicherung, wenn auf USB-Platten
+		 gesichert werden soll.
+    - rdbunetconf -> Konfiguriert die Sicherung, wenn auf einen
+                 Sicherungsserver gesichert werden soll.
+
+Sie fragen alle Sicherungsparameter ab und schreiben diese nach:
+
+/etc/invis/rdbackup.conf
+
+Die Datei kann nach der ersten Erstellung auch manuell bearbeitet
+werden. Erneutes Aufrufen eines der Tools ist auch möglich.
+
+
+Für den Fall, dass auf USB-Platten gesichert werden soll
+müssen dem System Datensicherungsfestplatten bekannt gemacht werden.
+Voraussetzung dafür sind USB-Festplatten, die bereits partitioniert
+und mit ext3/ext4 formatiert sind.
+
+Es sollte nur eine primäre Partition angelegt werden.
+
+Dem System wird die Festplatte durch aufrufen des Scripts
+udbadddisk vorgenommen.
+
+Verbinden Sie die Festplatte mit dem System und starten Sie 
+das Script. Es wird die Festplatte sowie die Partition erkennen
+und anzeigen. Achten Sie darauf, dass die ausgegebenen Daten 
+korrekt sind. Ist dies nicht der Fall haben Sie 3 Sekunden, um 
+das Script mittels STRG+C abzubrechen. Sie sollten die Platte 
+in diesem Fall vom System trennen, neu verbinden und den Vorgang
+wiederholen.
+
+Die Nutzung von invis-rdbu ist denkbar einfach. Es genügt die 
+vorbereiteten Festplatten mit dem System zu verbinden. Alles
+weitere läuft automatisch. Erfolg oder Misserfolg der Sicherung
+werden sowohl per Mail als auch über das invis-Portal mitgeteilt.
+
+Die Anzeige im invis-Portal muss in der Datei:
+
+/srv/www/htdocs/portal/config.php
+
+aktiviert werden.
+
+Die Sicherung auf einen Sicherungsserver erfordert andere Einrich-
+tungsschritte.
+
+Zunächst muss dafür gesorgt werden, dass sich der lokale Benutzer
+root sich mit einem Schlüssel per SSH als root am Sicherungsserver
+anmelden kann.
+
+Danach müssen die Dateien aus:
+/usr/share/doc/packages/invis-rdbu/server-parts
+auf den Sicherungsserver kopiert werden:
+
+    chkbuspace -> /usr/local/bin/
+    invisbu.cron -> /etc/cron.d/
+
+Danach sind beide Dateien an Ihre Bedürfnisse anzupassen.
+
+Wenn die original Besitzrechte auf dem Sicherungsserver abgebildet
+werden sollen, muss dieser an die LDAP gestützte Benutzerverwaltung
+des invis-Servers angebunden werden.
+
+Falls per SMB/CIFS auf die Sicherungsverzeichnisse zugegriffen
+werden soll muss Samba installiert werden. Eine Beispielkonfiguration
+liegt ebenfalls in:
+/usr/share/doc/packages/invis-rdbu/server-parts
+Sie ist so aufgebaut, dass Samba ebenfalls direkt an die LDAP-
+gestützte Benutzerverwaltung angebunden wird.

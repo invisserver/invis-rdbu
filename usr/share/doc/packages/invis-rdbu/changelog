@@ -1,0 +1,28 @@
+udevrdbu 0.8
+- Emailbenachrichtigungssystem überarbeitet
+udevrdbu 0.7
+- Umbau zu RPM-Packet
+udevrdbu 0.6
+- Dank systemd müssen durch udev gestartete Scripts innerhalb weniger Sekunden beendet sein, sonst werden sie terminiert. Dies erfordert
+  eine neue Herangehensweise. Im Moment in dem eine Festplatte verbunden wird, wird nicht mehr das Sicherungsscript gestartet, sondern
+  lediglich die Ziffer 1 in eine Datei geschrieben. Ein Cronjob überwacht diese Datei un löst die Datensicherung aus wenn eine 1 gelesen wird
+  und schreibt wieder eine 0 in die Datei.
+
+udevrdbu 0.5
+- Fehler bei der Partitionserkennung gefixt.
+- Script "addisk" hinzugefuegt. Hiermit lassen sich einfach weitere Backupplaten hinzufuegen, ohne eine bestehende Konfiguration zu aendern.
+
+udevrdbu 0.4
+- Setpup-Probleme gefixt
+- Vor der Sicherung Bootpartitions-Image erstellen, wenn safebootpart-Script vorhanden
+
+udevrdbu 0.3
+- wenn nicht vorhanden wird das Datensicherungsverzeichnis auf dem Sicherungsziel jetzt automatisch angelegt.
+- Pfade und Dateinamen so geändert, dass ein Upgrade von udevsync besser klappt.
+
+udevrdbu 0.2
+- Workaround für nicht funktionierendes Löschen der LV-Snapshots eingebaut.
+- Logging angepasst.
+
+udevrdbu 0.1
+- Initiale Version / unveröffentlicht.

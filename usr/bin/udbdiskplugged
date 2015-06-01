@@ -1,0 +1,8 @@
+#!/bin/bash
+# Helferscript fuer udev-gestuetzte Datensicherung
+
+# Variablen
+plugfile="/var/spool/results/backup/plugged"
+
+echo "1" > $plugfile
+

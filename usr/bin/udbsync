@@ -1,0 +1,11 @@
+#!/bin/bash
+# UDEV-Event Script
+plugfile="/var/spool/results/backup/plugged"
+
+if [[ `cat $plugfile` == "1" ]]; then
+    echo 0 > $plugfile
+    /bin/mount -o acl,user_xattr /dev/backup /mnt/udevsync && /mnt/udevsync/bin/rdbackup 
+    #echo "Exit-Code rdbackup: $?" >> /var/log/rdbackup.log
+    #sync
+    /bin/umount -f /dev/backup
+fi

@@ -1,0 +1,178 @@
+#!/bin/bash
+# Script zur inkrementellen Sicherung von virtuellen Maschinen
+# Systemvoraussetzungen LVM-basiertes Festplattenmanagement und 
+# das Tool rdiff-backup
+# Weiterhin muss ein Backup-Server erreichbar sein, an dem sich
+# der lokale Benutzer "root" per SSH-Schluessel anmelden kann.
+# Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
+# installiert sein.
+
+# Version 0.3
+
+# (c) 2012,2014 Stefan Schaefer -- FSP Computer & Netzwerke
+# License GPLv3
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
+# der GNU General Public License, wie von der Free Software Foundation,
+# Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren
+# veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+
+# Dieses Programm wird in der Hoffnung, dass es nützlich sein wird, aber
+# OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+# Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+# Siehe die GNU General Public License für weitere Details.
+
+# Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
+# Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>
+
+# Globale Einstellungen
+confdir="/etc/invis"
+conffile="$confdir/rdbackup.conf"
+pwfile="$confdir/passwords.conf"
+
+backupdir="/mnt/backup"
+logfile="/var/log/rdbackup.log"
+datum=$(date "+%d.%m.%Y - %H:%M")
+
+getconfvalue() {
+    cat $3 | grep "$1:" | cut -d ":" -f "$2"
+}
+
+# Mountpoint fuer Backuvolumes erstellen
+if [[ ! -d  $backupdir ]]; then
+    mkdir -p $backupdir
+fi
+
+# LVM-Snapshot erzeugen und mounten
+volumegroup=$(getconfvalue "volumeGroup" "2" "$conffile")
+sourcevolume=($(getconfvalue "sourceVolume" "2" "$conffile"))
+snapshotsize=$(getconfvalue "snapshotSize" "2" "$conffile")
+mailto=$(getconfvalue "mailTo" "2" "$conffile")
+mailfrom=$(getconfvalue "mailFrom" "2" "$conffile")
+mailwhen=$(getconfvalue "mailWhen" "2" "$conffile")
+
+# Kontrollverzeichnis für Ergebnisdateien
+controldirectory="/var/spool/results/backup"
+
+# Kontrollverzeichnis anlegen.
+if [[ ! -d $controldirectory ]]; then
+    mkdir -p $controldirectory
+    chown -R .www $controldirectory
+fi
+
+# Datensicherungsmodus nur starten, wenn die Datei /var/spool/results/backup/restore
+# nicht vorhanden ist.
+if [[ ! -f $controldirectory/restore ]]; then
+    # Aktuelles Datum ermitteln und in Variable $datum stecken
+    echo "Datensynchronisation vom $datum" > $logfile
+
+    # Bootpartition sichern, wenn Script vorhanden
+    if [[ -f /usr/bin/safebootpart ]]; then
+	safebootpart
+    fi
+
+    ## Warnung, wenn Plattenplatz unter 10% fällt
+    usedspace=`df -h /mnt/udevsync/|grep "/"|tr -s " "|cut -d " " -f 5|cut -d "%" -f 1`
+    echo "$usedspace" > $controldirectory/full
+    # Per email warnen, wenn Platte zu mehr als 90% voll
+    if (( $usedspace > 90 )); then
+	echo "$datum: Achtung die Synchronisationsfestplatte ist zu $usedspace% belegt." |mailx -s "$datum: Synchronisationsfestplatte fast voll" -r $mailfrom $mailto
+    fi
+
+    echo -e `date +%s` > $controldirectory/status
+
+    # Source Volumes abarbeiten
+    for svolume in ${sourcevolume[*]}; do
+	datum=$(date "+%d.%m.%Y - %H:%M")
+	echo "$datum - Gesichert wird Volume: $svolume" >> $logfile
+
+	/sbin/lvcreate -L $snapshotsize -s -n invisbackup /dev/$volumegroup/$svolume >/dev/null 2>&1
+	ecode=${?}
+	# Programm abbrechen, wenn Snapshot nicht erstellt werden konnte
+	if [[ $ecode != 0 ]]; then
+	    echo "$datum - Backup-Volume konnte nicht erstellt werden, Programm wird abgebrochen. Exitcode: $ecode" |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
+	    exit 1
+	fi
+
+	mount /dev/$volumegroup/invisbackup $backupdir
+	ecode=${?}
+	
+	if [[ $ecode != 0 ]]; then
+	    echo "$datum - Backup-Volume konnte nicht eingebunden werden, Programm wird abgebrochen. Exitcode: $ecode" |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
+	    exit 1
+	fi
+
+	# Backup durchfuehren
+	# Zieldaten ermitteln
+	targetdir=$(getconfvalue "targetDirUDEV" "2" "$conffile")
+	targethost=$(getconfvalue "targetHost" "2" "$conffile")
+
+	# Unterscheidung lokale oder entfernte Sicherung
+	if [[ $targethost == "localhost" ]];then
+	    # Sicherungsverzeichnis erstellen
+	    if [[ ! -d  $targetdir ]]; then
+		mkdir -p $targetdir
+	    fi
+	    rdiff-backup $backupdir $targetdir/$svolume >/dev/null 2> $logfile
+	fi
+	ecode=${?}
+
+	datum=$(date "+%d.%m.%Y - %H:%M")
+	if [[ $ecode != 0 ]]; then
+	    echo "$datum - Während der Sicherung des Volumes $svolume sind Fehler aufgetreten. Exit-Code: $ecode." |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
+	elif [[ $mailwhen == "allways" ]]; then
+	    echo="$datum - Datensicherung des Volumes $svolume  wurde fehlerfrei abgeschlossen."|tee -a $logfile | mailx -s "Datensicherung erfolgreich"  -r $mailfrom $mailto
+	fi
+	echo "$svolume $ecode" >> $controldirectory/status
+
+	# Backup-Volume aushaengen und loeschen
+	umount $backupdir
+	ecode=${?}
+	if [[ $ecode != 0 ]]; then
+	    echo "$datum - Backup-Volume konnte nicht ausgehängt werden, Programm wird abgebrochen."|tee -a $logfile | mailx -s "Fehler bei Datensicherung" -r $mailfrom $mailto
+	    exit 1
+	fi
+
+	# Synchronisation der Festplattenpuffer erzwingen und warten bis alles abgeschlossen ist.
+	sync
+	sleep 5
+	udevadm settle
+
+	# Dirty Workaround
+	ecode=1
+	while [[ $ecode != 0 ]]; do
+	    datum=$(date "+%d.%m.%Y - %H:%M")
+	    /sbin/lvremove -f --noudevsync /dev/$volumegroup/invisbackup >> $logfile 
+	    ecode=${?} 
+	    if [[ $ecode != 0 ]]; then
+		echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile
+		sleep 2
+	    else
+		echo "$datum - Backup-Volume wurde erfolgreich gelöscht." >> $logfile
+	    fi
+	done
+    done
+    # Beenden
+    datum=$(date "+%d.%m.%Y - %H:%M")
+    echo "$datum - Backup-Vorgang wurde vollständig abgeschlossen." >> $logfile
+else
+    # Kontrolldatei löschen
+    rm -f $controldirectory/restore
+    echo "Hängen Sie die Datensicherungsfestplatte nach erfolgter Datenrücksicherung mit umount /dev/backup wieder aus"
+    # Mit Fehler 1 beenden - verhindert umount
+    exit 1
+fi
+

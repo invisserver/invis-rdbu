@@ -1,0 +1,10 @@
+# Umgebungsvariablen setzen
+PATH="/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/X11R6/bin"
+# Email Versand fuer die invis cron-jobs deaktiviert. Es sind einfach zu viele Mails
+MAILTO=/dev/null
+
+# Testen, ob eine Datensicherung erfolgen soll
+*/5 * * * * root /usr/bin/udbsync
+
+# Netzwerkbackup starten
+25 23 * * * root /usr/bin/rdbunet

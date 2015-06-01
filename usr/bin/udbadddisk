@@ -1,0 +1,92 @@
+#!/bin/bash
+# installer für udevbu
+# Version 1.2
+# (c) 2009,2014 Stefan Schäfer invis-server.org
+# License: GPLv3
+# Questions: stefan@invis-server.org
+# Have a look at wiki.invis-server.org and forum.invis-server.org
+
+# Arbeitsverzeichnis
+workingdir="/var/lib/invis-rdbu"
+
+# Funktion - Konfigurationsparameter tauschen
+changevalues() {
+    # Arg1 = Pfad, Arg2 = Datei, Arg3 = sed String
+    echo $3 >> /root/test.txt
+    cat $1/$2|sed -e "s%$3%g" > $1/$2.new
+    mv $1/$2.new $1/$2
+}
+
+# Festplatte und Partition der Dasi-Festplatte ermitteln
+hdisk=`cat /var/log/messages |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f5|tr -d ":"`
+partition=`cat /var/log/messages |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f6`
+
+echo "Gefundene Festplatte: $hdisk"
+echo "Gefundene Partition: $partition"
+sleep 3
+
+if [[ -n $partition ]]; then
+    ismounted2=`cat /etc/mtab|grep "/dev/$partition"`
+else
+    ismounted2=""
+fi
+
+echo $ismounted2
+
+if [[ -n $ismounted2 ]];then
+    echo "Ihre Festplatte ist derzeit eingehängt, das Script wird abgebrochen. Wenn Sie sicher sind, dass das nicht der Fall ist, 
+schalten Sie sie einfach noch einmal aus und wieder ein. Starten Sie dann das install-Script erneut."
+    exit
+fi
+
+#Datensicherungspartition einhängen
+mount /dev/$partition /mnt/udevsync
+
+# wenn nicht vorhanden backup-Verzeichnis anlegen
+if [[ ! -d /mnt/udevsync/rdbackups ]]; then
+    mkdir /mnt/udevsync/rdbackups
+fi
+
+# wenn nicht vorhanden backup-Verzeichnis anlegen
+if [[ ! -d /mnt/udevsync/bin ]]; then
+    mkdir /mnt/udevsync/bin
+fi
+
+# DasiScript auf die Platte kopieren
+cp $workingdir/rdbackup /mnt/udevsync/bin/rdbackup
+chmod ug+x /mnt/udevsync/bin/rdbackup
+chown root.root /mnt/udevsync/bin/rdbackup
+
+#echo $hdisk,$partition
+# UDEV-Identifikationsparameter ermitteln
+partsize=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTR{size}|cut -d "=" -f 3|tr -d '"'`
+contserial=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTRS{serial}|head -n1|cut -d "=" -f 3|tr -d '"'`
+
+echo "Gefundenes Merkmal Partitionsgröße: $partsize"
+echo "Gefundenes Merkmal Seriennummer: $contserial"
+
+# UDEV-Regel vorbereiten
+file="10-backupdisk.rules"
+cp $workingdir/$file.template $workingdir/$file
+
+# Werte ändern 
+strings="serialnr%$contserial"
+changevalues $workingdir $file "$strings"
+
+strings="partsize%$partsize"
+changevalues $workingdir $file "$strings"
+
+if [[ ! -f /etc/udev/rules.d/$file ]]; then
+    cp $workingdir/$file /etc/udev/rules.d/
+else
+    if [[ ! `cat $workingdir/$file` == `cat /etc/udev/rules.d/$file` ]]; then
+        cat $workingdir/$file >> /etc/udev/rules.d/$file
+    fi
+fi
+
+rm -f $workingdir/$file
+
+# Laufwerk aushängen
+umount /dev/$partition
+
+echo "Datensicherungsplatte hinzugefügt"

@@ -1,0 +1,107 @@
+#!/bin/bash
+# installer für udevbu
+# Version 1.2
+# (c) 2009,2014 Stefan Schäfer invis-server.org
+# License: GPLv3
+# Questions: stefan@invis-server.org
+# Have a look at wiki.invis-server.org and forum.invis-server.org
+
+# Arbeitsverzeichnis
+workingdir="/var/lib/invis-rdbu"
+
+# Funktion - Konfigurationsparameter tauschen
+changevalues() {
+    # Arg1 = Pfad, Arg2 = Datei, Arg3 = sed String
+    echo $3 >> /root/test.txt
+    cat $1/$2|sed -e "s%$3%g" > $1/$2.new
+    mv $1/$2.new $1/$2
+}
+
+# Datensicherung einrichten
+
+echo -e "Datensicherung rdbunet wird konfiguriert\n"
+
+while [[ $dasivg == "" ]]; do
+    read -p "Geben Sie bitte den Namen der Volume-Group ein, in der sich die zu sichernden logical Volumes befinden: " dasivg
+done
+
+while [[ $dasilvs == "" ]]; do
+    read -p "Geben Sie bitte die Namen der zu sichernden logical Volumes ein. z.B. srv (Mehrere Volume-Namen durch Leerzeichen trennen.): " dasilvs
+done
+
+while [[ $dasitargethost == "" ]]; do
+    read -p "Geben Sie bitte die Namen oder IP-Adresse des Backupservers ein: " dasitargethost
+done
+
+while [[ $dasithsshport == "" ]]; do
+    read -p "Geben Sie bitte den SSH-Port des Backupservers ein: " dasithsshport
+done
+
+while [[ $dasitargetdir == "" ]]; do
+    read -p "Geben Sie bitte den Pfad zum Sicherungsverzeichnis auf dem Backupserver ein: " dasitargetdir
+done
+
+while [[ $admin == "" ]]; do
+    read -p "Geben Sie bitte den vollständigen Namen des zuständigen Administrators ein: " admin
+done
+
+while [[ $dasimailto == "" ]]; do
+    read -p "Geben Sie bitte die Mail-Adresse an, an die Datensicherungsmeldungen geschickt werden sollen: " dasimailto
+done
+
+while [[ $dasimailfrom == "" ]]; do
+    read -p "Geben Sie bitte die Mail-Adresse an, die als Absender verwendet werden sollen: " dasimailfrom
+done
+
+freespace=`pvscan -v 2>&1 |grep free |tr -s " " |cut -d " " -f 10-11`
+
+while [[ $dasisnapsize == "" ]]; do
+    read -p "Geben Sie bitte die Größe des Snapshotvolumes an. Die Größe muss größer als die größte zu sichernde Datei und kleiner als $freespace sein. (Angabe xxG): " dasisnapsize
+    if [[ ! `echo $dasisnapsize | grep G$` ]]; then
+	dasisnapsize=
+	echo "Fehlerhafte Größenangabe"
+    fi
+done
+
+# vorhandene Konfiguration sichern, wenn vorhanden, neue Datei kopieren
+path="/etc/invis/"
+file="rdbackup.conf"
+
+if [[ -f $path/$file ]]; then
+    mv $path/$file $path/$file.bak
+fi
+
+cp $workingdir/$file.template $path/$file
+
+strings="volumegroup_einsetzen%$dasivg"
+changevalues $path $file "$strings"
+
+strings="volumes_einsetzen%$dasilvs"
+changevalues $path $file "$strings"
+
+strings="localhost%$dasitargethost"
+changevalues $path $file "$strings"
+
+strings="22%$dasithsshport"
+changevalues $path $file "$strings"
+
+strings="targetdir_net%$dasitargetdir"
+changevalues $path $file "$strings"
+
+strings="Heinz_Becker%$admin"
+changevalues $path $file "$strings"
+
+strings="mail_to%$dasimailto"
+changevalues $path $file "$strings"
+
+strings="mail_from%$dasimailfrom"
+changevalues $path $file "$strings"
+
+strings="20G%$dasisnapsize"
+changevalues $path $file "$strings"
+
+# Backup wird aktiviert
+strings="netBackupActive:0%netBackupActive:1"
+changevalues $path $file "$strings"
+
+echo "Konfiguration abgeschlossen"

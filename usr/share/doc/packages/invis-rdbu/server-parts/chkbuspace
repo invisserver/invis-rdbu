@@ -1,0 +1,8 @@
+#!/bin/bash
+
+budir="/srv/shares/backup"
+
+# Festplattenbelegung auf Backup-Volume ermitteln
+usedspace=`df -h /srv/|tail -n 1|tr -s " "|cut -d " " -f 5|tr -d "%"`
+
+echo $usedspace > $budir/full
