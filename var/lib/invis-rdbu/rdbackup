@@ -7,7 +7,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.3
+# Version 0.4
 
 # (c) 2012,2014 Stefan Schaefer -- FSP Computer & Netzwerke
 # License GPLv3
@@ -40,12 +40,14 @@
 
 # Globale Einstellungen
 confdir="/etc/invis"
-conffile="$confdir/rdbackup.conf"
+conffile="$confdir/rdbackupdisk.conf"
 pwfile="$confdir/passwords.conf"
 
 backupdir="/mnt/backup"
 logfile="/var/log/rdbackup.log"
 datum=$(date "+%d.%m.%Y - %H:%M")
+
+buvolume="invisdiskbackup"
 
 getconfvalue() {
     cat $3 | grep "$1:" | cut -d ":" -f "$2"
@@ -99,7 +101,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	datum=$(date "+%d.%m.%Y - %H:%M")
 	echo "$datum - Gesichert wird Volume: $svolume" >> $logfile
 
-	/sbin/lvcreate -L $snapshotsize -s -n invisbackup /dev/$volumegroup/$svolume >/dev/null 2>&1
+	/sbin/lvcreate -L $snapshotsize -s -n $buvolume /dev/$volumegroup/$svolume >/dev/null 2>&1
 	ecode=${?}
 	# Programm abbrechen, wenn Snapshot nicht erstellt werden konnte
 	if [[ $ecode != 0 ]]; then
@@ -107,7 +109,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	    exit 1
 	fi
 
-	mount /dev/$volumegroup/invisbackup $backupdir
+	mount /dev/$volumegroup/$buvolume $backupdir
 	ecode=${?}
 	
 	if [[ $ecode != 0 ]]; then
@@ -155,7 +157,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	ecode=1
 	while [[ $ecode != 0 ]]; do
 	    datum=$(date "+%d.%m.%Y - %H:%M")
-	    /sbin/lvremove -f --noudevsync /dev/$volumegroup/invisbackup >> $logfile 
+	    /sbin/lvremove -f --noudevsync /dev/$volumegroup/$buvolume >> $logfile 
 	    ecode=${?} 
 	    if [[ $ecode != 0 ]]; then
 		echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile

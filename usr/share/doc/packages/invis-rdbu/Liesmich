@@ -1,6 +1,6 @@
 ## invis-rdbu
 (c) 2014 Stefan Schäfer -- invis-server.org
-Version 0.6
+Version 0.10
 Lizenz: GPLv3
 
 Kern des neuen invis-Backup-Tools ist das Programm rdiff-backup.
@@ -28,11 +28,10 @@ erstellt werden. Hierzu existieren zwei Tools:
 
 Sie fragen alle Sicherungsparameter ab und schreiben diese nach:
 
-/etc/invis/rdbackup.conf
+/etc/invis/rdbackup.conf bzw. /etc/invis/rdbackupdisk.conf
 
 Die Datei kann nach der ersten Erstellung auch manuell bearbeitet
 werden. Erneutes Aufrufen eines der Tools ist auch möglich.
-
 
 Für den Fall, dass auf USB-Platten gesichert werden soll
 müssen dem System Datensicherungsfestplatten bekannt gemacht werden.
