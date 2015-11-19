@@ -65,6 +65,13 @@ mailto=$(getconfvalue "mailTo" "2" "$conffile")
 mailfrom=$(getconfvalue "mailFrom" "2" "$conffile")
 mailwhen=$(getconfvalue "mailWhen" "2" "$conffile")
 netbuactive=$(getconfvalue "netBackupActive" "2" "$conffile")
+mounttype=$(getconfvalue "mountType" "2" "$conffile")
+
+# Wenn die Siecherung nicht direkt via SSH erfolgt Zugangsdaten auslesen
+if [[ $mounttype != "none" ]]; then
+    mountlogin=$(getconfvalue "mountLogin" "2" "$conffile")
+    mountpw=$(getconfvalue "mountPassword" "2" "$conffile")
+fi
 
 # Kontrollverzeichnis für Ergebnisdateien
 controldirectory="/var/spool/results/backup"
@@ -92,6 +99,23 @@ if [[ $netbuactive == "1" ]]; then
     mv $bootpartdir/bootpart.img $bootpartdir/bootpart.img.old
     dd if=$bootdev of=$bootpartdir/bootpart.img
 
+    # Zieldaten ermitteln
+    targetdir=$(getconfvalue "targetDir" "2" "$conffile")
+    targethost=$(getconfvalue "targetHost" "2" "$conffile")
+
+    if [[ $targethost == "localhost" ]] || [[ if $mounttype != "none" ]]; then
+	# Sicherungsverzeichnis erstellen
+	if [[ ! -d  $targetdir ]]; then
+	    mkdir -p $targetdir
+	fi
+    fi
+    
+    # Sicherungsziel einhaengen, wenn notwendig
+    if [[ $mounttype == "cifs" ]]; then
+	mountshare=$(getconfvalue "mountSahre" "2" "$conffile")
+	mount -o user=$mountlogin,password=$mountpw //$targethost/$mountshare $targetdir
+    fi 
+    
     # Source Volumes abarbeiten
     for svolume in ${sourcevolume[*]}; do
 	datum=$(date "+%d.%m.%Y - %H:%M")
@@ -114,16 +138,9 @@ if [[ $netbuactive == "1" ]]; then
 	fi
 
 	# Backup durchfuehren
-	# Zieldaten ermitteln
-	targetdir=$(getconfvalue "targetDirNet" "2" "$conffile")
-	targethost=$(getconfvalue "targetHost" "2" "$conffile")
 
-	# Unterscheidung lokale oder entfernte Sicherung
-	if [[ $targethost == "localhost" ]];then
-	    # Sicherungsverzeichnis erstellen
-	    if [[ ! -d  $targetdir ]]; then
-		mkdir -p $targetdir
-	    fi
+	# Unterscheidung: Siechrung via SSH oder lokal bzw. lokaler mount
+	if [[ $targethost == "localhost" ]] || [[ if $mounttype != "none" ]]; then
 	    rdiff-backup $backupdir $targetdir/$svolume >/dev/null 2>&1
 	else
 	    targetuser=$(getconfvalue "buServerUser" "2" "$conffile")
@@ -183,8 +200,15 @@ if [[ $netbuactive == "1" ]]; then
 	done
     done
     # Beenden
+
+    # Sicherungsziel aushaengen, wenn notwendig
+    if [[ $mounttype == "cifs" ]]; then
+	umount $targetdir
+    fi 
+
     datum=$(date "+%d.%m.%Y - %H:%M")
     echo "$datum - Backup-Vorgang wurde vollständig abgeschlossen." >> $logfile
+    
 else
     # Kontrolldatei löschen
     datum=$(date "+%d.%m.%Y - %H:%M")

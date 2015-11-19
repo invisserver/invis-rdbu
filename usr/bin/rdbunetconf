@@ -33,9 +33,25 @@ while [[ $dasitargethost == "" ]]; do
     read -p "Geben Sie bitte die Namen oder IP-Adresse des Backupservers ein: " dasitargethost
 done
 
-while [[ $dasithsshport == "" ]]; do
-    read -p "Geben Sie bitte den SSH-Port des Backupservers ein: " dasithsshport
+while [[ $targetssh == "" ]]; do
+    read -p "Erfolgt die Sicherung per SSH? [ja/nein]: " targetssh
 done
+
+if [[ $targetssh == "ja" ]]; then
+    while [[ $dasithsshport == "" ]]; do
+	read -p "Geben Sie bitte den SSH-Port des Backupservers ein: " dasithsshport
+    done
+else
+    while [[ $dasishare == "" ]]; do
+	read -p "Geben Sie den Namen der SMB Freigabe ein, die als Sicherungsziel dient: " dasishare
+    done
+    while [[ $dasiuser == "" ]]; do
+	read -p "Geben Sie den Benutzernamen zum Einhängen der SMB Freigabe ein: " dasiuser
+    done
+    while [[ $dasipw == "" ]]; do
+	read -p "Geben Sie das Passwort des zuvor genannten Benutzers ein: " dasipw
+    done
+fi
 
 while [[ $dasitargetdir == "" ]]; do
     read -p "Geben Sie bitte den Pfad zum Sicherungsverzeichnis auf dem Backupserver ein: " dasitargetdir
@@ -82,8 +98,22 @@ changevalues $path $file "$strings"
 strings="localhost%$dasitargethost"
 changevalues $path $file "$strings"
 
-strings="22%$dasithsshport"
-changevalues $path $file "$strings"
+if [[ $targetssh == "ja" ]]; then
+    strings="22%$dasithsshport"
+    changevalues $path $file "$strings"
+else
+    strings="none%cifs"
+    changevalues $path $file "$strings"
+
+    strings="mountLogin:username%mountLogin:$dasiuser"
+    changevalues $path $file "$strings"
+
+    strings="mountPassword:password%mountPassword:$dasipw"
+    changevalues $path $file "$strings"
+
+    strings="mountShare:share%mountShare:$dasishare"
+    changevalues $path $file "$strings"
+fi
 
 strings="targetdir_net%$dasitargetdir"
 changevalues $path $file "$strings"
