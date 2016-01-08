@@ -103,7 +103,7 @@ if [[ $netbuactive == "1" ]]; then
     targetdir=$(getconfvalue "targetDir" "2" "$conffile")
     targethost=$(getconfvalue "targetHost" "2" "$conffile")
 
-    if [[ $targethost == "localhost" ]] || [[ if $mounttype != "none" ]]; then
+    if [[ $targethost == "localhost" ]] || [[ $mounttype != "none" ]]; then
 	# Sicherungsverzeichnis erstellen
 	if [[ ! -d  $targetdir ]]; then
 	    mkdir -p $targetdir
@@ -140,7 +140,7 @@ if [[ $netbuactive == "1" ]]; then
 	# Backup durchfuehren
 
 	# Unterscheidung: Siechrung via SSH oder lokal bzw. lokaler mount
-	if [[ $targethost == "localhost" ]] || [[ if $mounttype != "none" ]]; then
+	if [[ $targethost == "localhost" ]] || [[ $mounttype != "none" ]]; then
 	    rdiff-backup $backupdir $targetdir/$svolume >/dev/null 2>&1
 	else
 	    targetuser=$(getconfvalue "buServerUser" "2" "$conffile")
@@ -153,7 +153,7 @@ if [[ $netbuactive == "1" ]]; then
 	
 	if [[ $ecode != 0 ]]; then
 	    echo "$datum - Während des Datensicherungsvorgangs sind Fehler aufgetreten. Exit-Code: $ecode."| tee -a $logfile |mailx -s "Datensicherung fehlerhaft" -r $mailfrom $mailto
-	elif [[ $mailwhen == "always" ]]; then
+	elif [[ $mailwhen == "allways" ]]; then
 	    echo "$datum - Backup-Vorgang wurde fehlerfrei abgeschlossen."| tee -a $logfile |mailx -s "Datensicherung erfolgreich" -r $mailfrom $mailto
 	fi
 
