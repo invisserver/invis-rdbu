@@ -40,8 +40,7 @@
 
 # Globale Einstellungen
 confdir="/etc/invis"
-conffile="$confdir/rdbackupdisk.conf"
-pwfile="$confdir/passwords.conf"
+conffile="$confdir/rdbudisk.conf"
 
 backupdir="/mnt/backup"
 logfile="/var/log/rdbackup.log"
@@ -135,7 +134,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	datum=$(date "+%d.%m.%Y - %H:%M")
 	if [[ $ecode != 0 ]]; then
 	    echo "$datum - Während der Sicherung des Volumes $svolume sind Fehler aufgetreten. Exit-Code: $ecode." |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
-	elif [[ $mailwhen == "allways" ]]; then
+	elif [[ $mailwhen == "always" ]]; then
 	    echo="$datum - Datensicherung des Volumes $svolume  wurde fehlerfrei abgeschlossen."|tee -a $logfile | mailx -s "Datensicherung erfolgreich"  -r $mailfrom $mailto
 	fi
 	echo "$svolume $ecode" >> $controldirectory/status

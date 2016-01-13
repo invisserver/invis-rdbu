@@ -1,11 +1,21 @@
-# Konfigurationsdatei fuer vmbackup
+# Konfigurationsdatei fuer invis-rdbunet
+# (c) 2010-2016 Stefan Schaefer - invis-server.org
 
 # Zielhost
 targetHost:localhost
 thSSHPort:22
-targetDirNet:targetdir_net
-targetDirUDEV:/mnt/udevsync/rdbackups
 netBackupActive:0
+
+# Das Zielverzeichnis muss bei lokaler Sicherung oder Sicherung
+# auf eine eingehaengte Netzwerkfreigabe ein lokaler Pfad sein.
+# Bei Sicherung via SSH bezieht sich der Pfad auf das Zielsystem 
+targetDir:/mnt/rdbu/invis-backup
+
+# Mount Informationen
+mountType:none
+mountLogin:username
+mountPassword:password
+mountShare:targetshare
 
 # LVM Daten
 volumeGroup:volumegroup_einsetzen

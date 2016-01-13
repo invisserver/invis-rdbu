@@ -81,7 +81,7 @@ done
 
 # vorhandene Konfiguration sichern, wenn vorhanden, neue Datei kopieren
 path="/etc/invis/"
-file="rdbackup.conf"
+file="rdbunet.conf"
 
 if [[ -f $path/$file ]]; then
     mv $path/$file $path/$file.bak

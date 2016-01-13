@@ -41,8 +41,7 @@
 
 # Globale Einstellungen
 confdir="/etc/invis"
-conffile="$confdir/rdbackup.conf"
-#pwfile="$confdir/passwords.conf"
+conffile="$confdir/rdbunet.conf"
 
 backupdir="/mnt/backup"
 logfile="/var/log/rdbunet.log"
@@ -153,7 +152,7 @@ if [[ $netbuactive == "1" ]]; then
 	
 	if [[ $ecode != 0 ]]; then
 	    echo "$datum - Während des Datensicherungsvorgangs sind Fehler aufgetreten. Exit-Code: $ecode."| tee -a $logfile |mailx -s "Datensicherung fehlerhaft" -r $mailfrom $mailto
-	elif [[ $mailwhen == "allways" ]]; then
+	elif [[ $mailwhen == "always" ]]; then
 	    echo "$datum - Backup-Vorgang wurde fehlerfrei abgeschlossen."| tee -a $logfile |mailx -s "Datensicherung erfolgreich" -r $mailfrom $mailto
 	fi
 

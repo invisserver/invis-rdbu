@@ -1,0 +1,7 @@
+Konfigurationsdateien fuer die invis-Datensicherungssysteme
+werden automatisch von den Scripts:
+
+- udbconf
+- rdbunetconf
+
+generiert. Vorlagen liegen unter /var/lib/invis-rdbu
