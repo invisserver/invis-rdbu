@@ -8,7 +8,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.4
+# Version 0.5
 
 # (c) 2012,2013,2014 Stefan Schaefer -- invis-server.org
 # License GPLv3
@@ -114,7 +114,11 @@ if [[ $netbuactive == "1" ]]; then
 	mountshare=$(getconfvalue "mountSahre" "2" "$conffile")
 	mount -o user=$mountlogin,password=$mountpw //$targethost/$mountshare $targetdir
     fi 
-    
+
+    # Anzahl der zu sichernden Volumes ermitteln
+    volumecount=${#sourcevolume[*]}
+    echo $volumecount >> $controldirectory/status
+
     # Source Volumes abarbeiten
     for svolume in ${sourcevolume[*]}; do
 	datum=$(date "+%d.%m.%Y - %H:%M")

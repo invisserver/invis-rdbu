@@ -7,9 +7,9 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.4
+# Version 0.5
 
-# (c) 2012,2014 Stefan Schaefer -- FSP Computer & Netzwerke
+# (c) 2012,2014,2016 Stefan Schaefer -- FSP Computer & Netzwerke
 # License GPLv3
 
 # This program is free software: you can redistribute it and/or modify
@@ -95,6 +95,9 @@ if [[ ! -f $controldirectory/restore ]]; then
 
     echo -e `date +%s` > $controldirectory/status
 
+    # Anzahl der zu sichernden Volumes ermitteln
+    volumecount=${#sourcevolume[*]}
+    echo $volumecount >> $controldirectory/status
     # Source Volumes abarbeiten
     for svolume in ${sourcevolume[*]}; do
 	datum=$(date "+%d.%m.%Y - %H:%M")
@@ -138,7 +141,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	    echo="$datum - Datensicherung des Volumes $svolume  wurde fehlerfrei abgeschlossen."|tee -a $logfile | mailx -s "Datensicherung erfolgreich"  -r $mailfrom $mailto
 	fi
 	echo "$svolume $ecode" >> $controldirectory/status
-
+	
 	# Backup-Volume aushaengen und loeschen
 	umount $backupdir
 	ecode=${?}
