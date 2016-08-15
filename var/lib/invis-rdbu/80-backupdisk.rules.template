@@ -1,0 +1,1 @@
+SUBSYSTEMS=="usb", KERNEL=="sd*", ATTRS{serial}=="serialnr", ATTR{size}=="partsize", SYMLINK+="backup", RUN+="/usr/bin/udbdiskplugged"

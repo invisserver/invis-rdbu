@@ -1,6 +1,6 @@
 ## invis-rdbu
 (c) 2014 Stefan Schäfer -- invis-server.org
-Version 0.10
+Version 0.11
 Lizenz: GPLv3
 
 Kern des neuen invis-Backup-Tools ist das Programm rdiff-backup.
