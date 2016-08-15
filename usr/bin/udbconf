@@ -1,10 +1,10 @@
 #!/bin/bash
 # installer für udevbu
 # Version 1.2
-# (c) 2009,2014 Stefan Schäfer invis-server.org
+# (c) 2009,2014,2016 Stefan Schäfer invis-server.org
 # License: GPLv3
 # Questions: stefan@invis-server.org
-# Have a look at wiki.invis-server.org and forum.invis-server.org
+# Have a look at wiki.invis-server.org and our mailing lists.
 
 # Arbeitsverzeichnis
 workingdir="/var/lib/invis-rdbu"
@@ -20,6 +20,7 @@ changevalues() {
 # Datensicherung einrichten
 
 echo -e "Datensicherung udrdbu wird konfiguriert\n"
+echo -e "Mit Hilfe der Kommandos \"vgscan\" und \"lvscan\" können sie die auf Ihrem System vorhandenen LVM Volume-Groups und Logical-Volumes ermitteln.\n"
 
 while [[ $dasivg == "" ]]; do
     read -p "Geben Sie bitte den Namen der Volume-Group ein, in der sich die zu sichernden logical Volumes befinden: " dasivg
