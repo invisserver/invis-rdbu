@@ -63,7 +63,7 @@ snapshotsize=$(getconfvalue "snapshotSize" "2" "$conffile")
 mailto=$(getconfvalue "mailTo" "2" "$conffile")
 mailfrom=$(getconfvalue "mailFrom" "2" "$conffile")
 mailwhen=$(getconfvalue "mailWhen" "2" "$conffile")
-
+rdboptions=$(getconfvalue "rdbOptions" "2" "$conffile")
 # Kontrollverzeichnis für Ergebnisdateien
 controldirectory="/var/spool/results/backup"
 
@@ -129,7 +129,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	    if [[ ! -d  $targetdir ]]; then
 		mkdir -p $targetdir
 	    fi
-	    rdiff-backup $backupdir $targetdir/$svolume >/dev/null 2> $logfile
+	    rdiff-backup "$rdboptions" $backupdir $targetdir/$svolume >/dev/null 2> $logfile
 	fi
 	ecode=${?}
 

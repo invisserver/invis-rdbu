@@ -1,0 +1,5 @@
+/srv/nfs4_base
+*/.recycle
+*/lost+found
+/proc
+/sys
