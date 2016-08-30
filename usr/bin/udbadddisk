@@ -18,8 +18,8 @@ changevalues() {
 }
 
 # Festplatte und Partition der Dasi-Festplatte ermitteln
-hdisk=`journalctl --no-pager --system |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f6|tr -d ":"`
-partition=`journalctl --no-pager --system |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f7`
+hdisk=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f6|tr -d ":"`
+partition=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f7`
 
 echo "Gefundene Festplatte: $hdisk"
 echo "Gefundene Partition: $partition"
