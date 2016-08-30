@@ -57,6 +57,7 @@ if [[ ! -d  $backupdir ]]; then
 fi
 
 # LVM-Snapshot erzeugen und mounten
+snapshotvolume=$(getconfvalue "snapshotVolume" "2" "$conffile")
 volumegroup=$(getconfvalue "volumeGroup" "2" "$conffile")
 sourcevolume=($(getconfvalue "sourceVolume" "2" "$conffile"))
 snapshotsize=$(getconfvalue "snapshotSize" "2" "$conffile")
@@ -124,7 +125,7 @@ if [[ $netbuactive == "1" ]]; then
 	datum=$(date "+%d.%m.%Y - %H:%M")
 	echo "$datum - Gesichert wird Volume: $svolume" >> $logfile
 
-	/sbin/lvcreate -L $snapshotsize -s -n invisbackup /dev/$volumegroup/$svolume >/dev/null 2>&1
+	/sbin/lvcreate -L $snapshotsize -s -n $snapshotvolume /dev/$volumegroup/$svolume >/dev/null 2>&1
 	ecode=${?}
 	# Programm abbrechen, wenn Snapshot nicht erstellt werden konnte
 	if [[ $ecode != 0 ]]; then
@@ -192,7 +193,7 @@ if [[ $netbuactive == "1" ]]; then
 	ecode=1
 	while [[ $ecode != 0 ]]; do
 	    datum=$(date "+%d.%m.%Y - %H:%M")
-	    /sbin/lvremove -f --noudevsync /dev/$volumegroup/invisbackup >> $logfile 
+	    /sbin/lvremove -f --noudevsync /dev/$volumegroup/$snapshotvolume >> $logfile 
 	    ecode=${?} 
 	    if [[ $ecode != 0 ]]; then
 		echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile

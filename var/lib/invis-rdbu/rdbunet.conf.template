@@ -24,6 +24,8 @@ sourceVolume:volumes_einsetzen
 # Groeße des Snapshots -> Achtung bei Images von virtuellen Maschinen,
 # hier muessen die Images in den Snapshot passen.
 snapshotSize:20G
+# Name des Snapshot-Volumes
+snapshotVolume:invisnetbackup
 
 # Admin
 adminitrator:Heinz_Becker
