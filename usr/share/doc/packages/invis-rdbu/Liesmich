@@ -1,6 +1,6 @@
 ## invis-rdbu
-(c) 2014 Stefan Schäfer -- invis-server.org
-Version 0.11
+(c) 2014-2016 Stefan Schäfer -- invis-server.org
+Version 0.15
 Lizenz: GPLv3
 
 Kern des neuen invis-Backup-Tools ist das Programm rdiff-backup.
@@ -88,3 +88,12 @@ liegt ebenfalls in:
 /usr/share/doc/packages/invis-rdbu/server-parts
 Sie ist so aufgebaut, dass Samba ebenfalls direkt an die LDAP-
 gestützte Benutzerverwaltung angebunden wird.
+
+Ab Version 0.14 gibt invis-rdbu Informationen zum Stand der Dasi
+an das invis-Portal weiter.
+
+Ab Version 0.15 wird nach einem unerwarteten Abbruch der Datensicherung
+räumt jetzt das Script "dasimonitor" auf.
+
+Es können in den Konfigurationsdateien Optionen für rdiff-backup 
+gesetzt werden.

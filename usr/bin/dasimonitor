@@ -1,0 +1,121 @@
+#!/bin/bash
+# Monitoring und Cleanup Script zur Ueberwachung der invis-Datensicherung mit invis-rdbu
+# (c) 2016 Stefan Schaefer -- invis-server.org
+
+# License: GPLv3
+# Questions: info@invis-server.org
+
+# Dieses Script führt alle zur Installation eines invis Servers AD notwendigen 
+# Konfigurationsschritte aus.
+# Das Script sine nutzt /var/lib/sine als Arbeitsverzeichnis, hier sind von sine
+# verwendete Kontroll-, Variablen- und Protokolldateien zu finden.
+
+# Dieses Programm ist freie Software. Sie können es unter den Bedingungen der 
+# GNU General Public License, wie von der Free Software Foundation veröffentlicht,
+# weitergeben und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder
+# (nach Ihrer Option) jeder späteren Version.
+
+# Die Veröffentlichung dieses Programms erfolgt in der Hoffnung, daß es Ihnen
+# von Nutzen sein wird, aber OHNE IRGENDEINE GARANTIE, sogar ohne die implizite 
+# Garantie der MARKTREIFE oder der VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK. 
+# Details finden Sie in der GNU General Public License.
+
+# Sie sollten ein Exemplar der GNU General Public License zusammen mit diesem 
+# Programm erhalten haben. Falls nicht, siehe <http://www.gnu.org/licenses/>. 
+
+## Logik
+# Datensicherung ueberwachen
+# Wenn eine der folgenden verschiedenen Programm Kombinationen aktiv ist, laeuft die Datensicherung
+# 1: udbsync & dd
+# 2: udbsync & rdbackup
+# Ist eine der beiden Kombis aktiv wird ein Dasi laeuft Flag in /var/spool/results gesetzt
+# Sind beide Kombinationen nicht aktiv, und erfolgt keine Netzwerksicherung wird gescheut, ob
+# mit Mounts und Snapshot-Volumes aufgeraeumt werden kann.
+
+# Globale Einstellungen
+confdir="/etc/invis"
+netconffile="$confdir/rdbunet.conf"
+diskconffile="$confdir/rdbudisk.conf"
+logfile="/var/log/dasicleanup.log"
+
+# Kontrollverzeichnis für Ergebnisdateien
+controldirectory="/var/spool/results/backup"
+
+getconfvalue() {
+    cat $3 | grep "$1:" | cut -d ":" -f "$2"
+}
+
+# Prozesse suchen -> Disk-Backup
+udbsyncact=`pgrep -x udbsync`
+rdbackupact=`pgrep -x rdbackup`
+ddact=`pgrep -x dd`
+
+# Disk-Backup Snapshot-Volume ermitteln
+if [[ -f $netconffile ]]; then
+    disksnapvol=$(getconfvalue "snapshotVolume" "2" "$diskconffile")
+fi
+
+# Pruefen, ob Disk-Dasi laeuft
+if [[ -n $udbsyncact && -n $rdbackupact ]]; then
+    dasiact="1"
+fi
+
+if [[ -n $udbsyncact && -n $ddact ]]; then
+    dasiact="1"
+fi
+
+# Prozesse suchen -> Net-Backup
+# Ist die Netzwerksicherung aktiv?
+if [[ -f $netconffile ]]; then
+    netbuactive=$(getconfvalue "netBackupActive" "2" "$netconffile")
+    netsnapvol=$(getconfvalue "snapshotVolume" "2" "$netconffile")
+fi
+
+rdbunetact=`pgrep -x rdbunet`
+
+if [[ $netbuactive == 1 && -n $netbuact ]]; then
+    dasiact="1"
+fi
+
+# ggf. Aufraeumen 
+if [[ $dasiact == "1" ]]; then
+    echo "Datensicherung aktiv"
+    echo "1" > $controldirectory/buactive
+else
+    datum=$(date "+%d.%m.%Y - %H:%M")
+    echo "$datum: Aufräumen notwendig" > $logfile
+    if [[ -n $disksnapvol ]]; then
+	svols[0]=$disksnapvol
+    fi
+
+    if [[ -n $netsnapvol ]]; then
+	svols[1]=$netsnapvol
+    fi
+    
+    # Verwaiste Mounts entfernen
+    while [[ `mount |grep /mnt/udevsync` ]]; do 
+	umount /mnt/udevsync
+    done
+
+    while [[ `mount |grep /mnt/backup` ]]; do 
+	umount /mnt/backup
+    done
+
+    # Dirty Workaround zum Entfernen stoerrischer Snapshot-Volumes
+    for svol in ${svols[*]}; do
+	if [[ `lvscan | $svol` ]]; then
+	    ecode=1
+	    while [[ $ecode != 0 ]]; do
+		/sbin/lvremove -f --noudevsync /dev/$volumegroup/$snapshotvolume >> $logfile
+		ecode=${?} 
+		if [[ $ecode != 0 ]]; then
+		    echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile
+		    sleep 2
+		else
+		    echo "$datum - Backup-Volume wurde erfolgreich gelöscht." >> $logfile
+		fi
+	    done
+	fi
+    done
+
+fi
