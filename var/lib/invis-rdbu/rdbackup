@@ -7,7 +7,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.5
+# Version 0.15
 
 # (c) 2012,2014,2016 Stefan Schaefer -- FSP Computer & Netzwerke
 # License GPLv3
@@ -110,7 +110,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	    exit 1
 	fi
 
-	mount /dev/$volumegroup/$buvolume $backupdir
+	mount /dev/$volumegroup/$snapshotvolume $backupdir
 	ecode=${?}
 	
 	if [[ $ecode != 0 ]]; then
@@ -129,7 +129,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	    if [[ ! -d  $targetdir ]]; then
 		mkdir -p $targetdir
 	    fi
-	    rdiff-backup "$rdboptions" $backupdir $targetdir/$svolume >/dev/null 2> $logfile
+	    rdiff-backup $rdboptions $backupdir $targetdir/$svolume >/dev/null 2> $logfile
 	fi
 	ecode=${?}
 

@@ -41,4 +41,4 @@ mailWhen:failure
 buServerUser:root
 
 # rdiff-backup Optionen
-rbOptions:--exclude-globbing-filelist /etc/invis/backup-exclude-list --exclude-fifos --exclude-sockets
+rbbOptions:--exclude-globbing-filelist /etc/invis/backup-exclude-list --exclude-fifos --exclude-sockets

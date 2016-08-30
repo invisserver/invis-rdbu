@@ -8,7 +8,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.5
+# Version 0.15
 
 # (c) 2012,2013,2014 Stefan Schaefer -- invis-server.org
 # License GPLv3
@@ -134,7 +134,7 @@ if [[ $netbuactive == "1" ]]; then
 	    exit 1
 	fi
 
-	mount /dev/$volumegroup/invisbackup $backupdir
+	mount /dev/$volumegroup/$snapshotvolume $backupdir
 	ecode=${?}
 	
 	if [[ $ecode != 0 ]]; then
