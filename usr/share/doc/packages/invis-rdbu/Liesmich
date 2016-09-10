@@ -1,7 +1,12 @@
 ## invis-rdbu
 (c) 2014-2016 Stefan Schäfer -- invis-server.org
-Version 0.15
+Version 0.16
 Lizenz: GPLv3
+
+Mit Version 0.16 wird eine Auto-Update Funktion fuer das Disk-
+Backup eingeführt. Es wird for jeder Sicherung zuerst geprueft,
+ob eine neue Version des Sicherungsscripts bereit steht. Wenn ja,
+wird dieses vor der Sicherung auf die Sicherungsplatte kopiert.
 
 Kern des neuen invis-Backup-Tools ist das Programm rdiff-backup.
 Im Unterschied zum Vorgänger udevsync ist es jetzt möglich auch

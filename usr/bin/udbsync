@@ -1,11 +1,58 @@
 #!/bin/bash
-# UDEV-Event Script
+# UDEV-Event Script fuer invis-Server Disk-Backup
+# Das Script reagiert darauf, wenn eine vorbereitete externe
+# Datensicherungsplatte an den Server angeschlossen wird.
+# Es wird zunaechst geprueft, ob eine neue Version des 
+# Sicherungsscripts vorhanden ist. Wenn ja, wird dieses 
+# zuerst auf die Sicherungsplatte kopiert. Erst danach folgt
+# die Sicherung.
+
+# (c) 2011-2016 Stefan Schaefer -- invis-server.org
+# License GPLv3
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
+# der GNU General Public License, wie von der Free Software Foundation,
+# Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren
+# veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+
+# Dieses Programm wird in der Hoffnung, dass es nützlich sein wird, aber
+# OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+# Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+# Siehe die GNU General Public License für weitere Details.
+
+# Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
+# Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>
+
 plugfile="/var/spool/results/backup/plugged"
+rdbumaster="/var/lib/invis-rdbu"
+rdbucative="/mnt/udevsync/bin"
 
 if [[ `cat $plugfile` == "1" ]]; then
     echo 0 > $plugfile
-    /bin/mount -o acl,user_xattr /dev/backup /mnt/udevsync && /mnt/udevsync/bin/rdbackup 
-    #echo "Exit-Code rdbackup: $?" >> /var/log/rdbackup.log
-    #sync
+    /bin/mount -o acl,user_xattr /dev/backup /mnt/udevsync
+    # Erst Aoutoupdate bei Bedarf, dann Backup 
+    if [[ $? == 0 ]]; then
+	# Diff
+	ok=`diff -q $rdbuactive $rdbumaster`
+	# Updaten, wenn Dateien nicht identisch
+	if [[ -n $ok ]]; then
+	    cp $rdbumaster/rdbackup $rdbuactive/rdbackup
+	fi
+	# Suicerhung ausfuehren
+	$rdbuactive/rdbackup
+    fi
     /bin/umount -f /dev/backup
 fi
