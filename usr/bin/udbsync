@@ -38,7 +38,7 @@
 
 plugfile="/var/spool/results/backup/plugged"
 rdbumaster="/var/lib/invis-rdbu"
-rdbucative="/mnt/udevsync/bin"
+rdbuactive="/mnt/udevsync/bin"
 
 if [[ `cat $plugfile` == "1" ]]; then
     echo 0 > $plugfile
@@ -46,12 +46,12 @@ if [[ `cat $plugfile` == "1" ]]; then
     # Erst Aoutoupdate bei Bedarf, dann Backup 
     if [[ $? == 0 ]]; then
 	# Diff
-	ok=`diff -q $rdbuactive $rdbumaster`
+	ok=`diff -q $rdbuactive/rdbackup $rdbumaster/rdbackup`
 	# Updaten, wenn Dateien nicht identisch
 	if [[ -n $ok ]]; then
 	    cp $rdbumaster/rdbackup $rdbuactive/rdbackup
 	fi
-	# Suicerhung ausfuehren
+	# Sicherung ausfuehren
 	$rdbuactive/rdbackup
     fi
     /bin/umount -f /dev/backup

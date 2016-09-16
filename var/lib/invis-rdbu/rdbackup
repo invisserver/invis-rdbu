@@ -106,7 +106,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	ecode=${?}
 	# Programm abbrechen, wenn Snapshot nicht erstellt werden konnte
 	if [[ $ecode != 0 ]]; then
-	    echo "$datum - Backup-Volume konnte nicht erstellt werden, Programm wird abgebrochen. Exitcode: $ecode" |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
+	    echo "$datum - Backup-Volume \"$snapshotvolume\" konnte nicht erstellt werden, Programm wird abgebrochen. Exitcode: $ecode" |tee -a $logfile | mailx -s "Datensicherung fehlgeschlagen"  -r $mailfrom $mailto
 	    exit 1
 	fi
 
