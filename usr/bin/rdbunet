@@ -8,7 +8,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.15
+# Version 0.16
 
 # (c) 2012,2013,2014 Stefan Schaefer -- invis-server.org
 # License GPLv3
@@ -68,7 +68,7 @@ netbuactive=$(getconfvalue "netBackupActive" "2" "$conffile")
 mounttype=$(getconfvalue "mountType" "2" "$conffile")
 rdboptions=$(getconfvalue "rdbOptions" "2" "$conffile")
 
-# Wenn die Siecherung nicht direkt via SSH erfolgt Zugangsdaten auslesen
+# Wenn die Sicherung nicht direkt via SSH erfolgt Zugangsdaten auslesen
 if [[ $mounttype != "none" ]]; then
     mountlogin=$(getconfvalue "mountLogin" "2" "$conffile")
     mountpw=$(getconfvalue "mountPassword" "2" "$conffile")
@@ -144,7 +144,7 @@ if [[ $netbuactive == "1" ]]; then
 
 	# Backup durchfuehren
 
-	# Unterscheidung: Siechrung via SSH oder lokal bzw. lokaler mount
+	# Unterscheidung: Sichrung via SSH oder lokal bzw. lokaler mount
 	if [[ $targethost == "localhost" ]] || [[ $mounttype != "none" ]]; then
 	    rdiff-backup "$srboptions" $backupdir $targetdir/$svolume >/dev/null 2>&1
 	else

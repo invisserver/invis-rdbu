@@ -9,7 +9,7 @@ netBackupActive:0
 # Das Zielverzeichnis muss bei lokaler Sicherung oder Sicherung
 # auf eine eingehaengte Netzwerkfreigabe ein lokaler Pfad sein.
 # Bei Sicherung via SSH bezieht sich der Pfad auf das Zielsystem 
-targetDir:/mnt/rdbu/invis-backup
+targetDir:targetdir_net
 
 # Mount Informationen
 mountType:none
