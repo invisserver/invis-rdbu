@@ -51,7 +51,8 @@ rdbackupact=`pgrep -x rdbackup`
 ddact=`pgrep -x dd`
 
 # Disk-Backup Snapshot-Volume ermitteln
-if [[ -f $netconffile ]]; then
+if [[ -f $diskconffile ]]; then
+    volumegroup=$(getconfvalue "volumeGroup" "2" "$diskconffile")
     disksnapvol=$(getconfvalue "snapshotVolume" "2" "$diskconffile")
 fi
 
@@ -68,12 +69,13 @@ fi
 # Ist die Netzwerksicherung aktiv?
 if [[ -f $netconffile ]]; then
     netbuactive=$(getconfvalue "netBackupActive" "2" "$netconffile")
+    volumegroup=$(getconfvalue "volumeGroup" "2" "$netconffile")
     netsnapvol=$(getconfvalue "snapshotVolume" "2" "$netconffile")
 fi
 
 rdbunetact=`pgrep -x rdbunet`
 
-if [[ $netbuactive == 1 && -n $netbuact ]]; then
+if [[ $netbuactive == 1 && -n $rdbunetact ]]; then
     dasiact="1"
 fi
 
@@ -103,10 +105,12 @@ else
 
     # Dirty Workaround zum Entfernen stoerrischer Snapshot-Volumes
     for svol in ${svols[*]}; do
-	if [[ `lvscan | $svol` ]]; then
+	if [[ `lvscan | grep $svol` ]]; then
 	    ecode=1
 	    while [[ $ecode != 0 ]]; do
-		/sbin/lvremove -f --noudevsync /dev/$volumegroup/$snapshotvolume >> $logfile
+		#echo $volumegroup
+		#echo $netsnapvol
+		/sbin/lvremove -f --noudevsync /dev/$volumegroup/$netsnapvol >> $logfile
 		ecode=${?} 
 		if [[ $ecode != 0 ]]; then
 		    echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile
