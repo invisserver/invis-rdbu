@@ -1,7 +1,11 @@
 ## invis-rdbu
 (c) 2014-2016 Stefan Schäfer -- invis-server.org
-Version 0.16
+Version 0.17
 Lizenz: GPLv3
+
+Version 0.17 bringt mit dasimonitor mit, welches nach einer
+fehlgeschlagenen Datensicherung verwaiste Mounts und Snapshot-
+volumes entfernt.
 
 Mit Version 0.16 wird eine Auto-Update Funktion fuer das Disk-
 Backup eingeführt. Es wird for jeder Sicherung zuerst geprueft,

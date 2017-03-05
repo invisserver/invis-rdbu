@@ -1,3 +1,7 @@
+Mit Zusammenführung der urpsrünglich getrennten Programme zur Sicherung auf externe Festplatten oder Datensicherungsserver
+wurde der Quellcode in Github eingestellt und die Software als RPM Paket gebaut. Seit dem ist das Changelog den Githu-
+Commits sowie dem Changelog des RPMs zu entnehmen.
+
 udevrdbu 0.8
 - Emailbenachrichtigungssystem überarbeitet
 udevrdbu 0.7
