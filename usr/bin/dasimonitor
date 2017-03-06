@@ -84,6 +84,8 @@ if [[ $dasiact == "1" ]]; then
     echo "Datensicherung aktiv"
     echo "1" > $controldirectory/buactive
 else
+    echo "Datensicherung inaktiv"
+    echo "0" > $controldirectory/buactive
     datum=$(date "+%d.%m.%Y - %H:%M")
     echo "$datum: Aufräumen notwendig" > $logfile
     if [[ -n $disksnapvol ]]; then
