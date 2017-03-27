@@ -153,7 +153,7 @@ if [[ ! -f $controldirectory/restore ]]; then
 	sync
 	
 	# Warten bis das Snapshot-Volume sauber ist.
-	while [[ `dmsetup info /dev/$volumegroup/$snashotvolume|grep ^"Open count" |tr -d " "| cut -d ":" -f2` != 0 ]]; do
+	while [[ `dmsetup info /dev/$volumegroup/$snapshotvolume|grep ^"Open count" |tr -d " "| cut -d ":" -f2` != 0 ]]; do
 	    sleep 3
 	done
 
