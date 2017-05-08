@@ -111,8 +111,8 @@ else
 	    ecode=1
 	    while [[ $ecode != 0 ]]; do
 		#echo $volumegroup
-		#echo $netsnapvol
-		/sbin/lvremove -f --noudevsync /dev/$volumegroup/$netsnapvol >> $logfile
+		#echo $svol
+		/sbin/lvremove -f --noudevsync /dev/$volumegroup/$svol >> $logfile
 		ecode=${?} 
 		if [[ $ecode != 0 ]]; then
 		    echo "$datum - Das Backup-Volume konnte nicht gelöscht werden. Exit-Code: $ecode." >> $logfile
