@@ -41,52 +41,61 @@ fi
 
 #Datensicherungspartition einhängen
 mount /dev/$partition /mnt/udevsync
+mountok=$?
 
-# wenn nicht vorhanden backup-Verzeichnis anlegen
-if [[ ! -d /mnt/udevsync/rdbackups ]]; then
-    mkdir /mnt/udevsync/rdbackups
-fi
-
-# wenn nicht vorhanden backup-Verzeichnis anlegen
-if [[ ! -d /mnt/udevsync/bin ]]; then
-    mkdir /mnt/udevsync/bin
-fi
-
-# DasiScript auf die Platte kopieren
-cp $workingdir/rdbackup /mnt/udevsync/bin/rdbackup
-chmod ug+x /mnt/udevsync/bin/rdbackup
-chown root.root /mnt/udevsync/bin/rdbackup
-
-#echo $hdisk,$partition
-# UDEV-Identifikationsparameter ermitteln
-partsize=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTR{size}|cut -d "=" -f 3|tr -d '"'`
-contserial=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTRS{serial}|head -n1|cut -d "=" -f 3|tr -d '"'`
-
-echo "Gefundenes Merkmal Partitionsgröße: $partsize"
-echo "Gefundenes Merkmal Seriennummer: $contserial"
-
-# UDEV-Regel vorbereiten
-file="80-backupdisk.rules"
-cp $workingdir/$file.template $workingdir/$file
-
-# Werte ändern 
-strings="serialnr%$contserial"
-changevalues $workingdir $file "$strings"
-
-strings="partsize%$partsize"
-changevalues $workingdir $file "$strings"
-
-if [[ ! -f /etc/udev/rules.d/$file ]]; then
-    cp $workingdir/$file /etc/udev/rules.d/
-else
-    if [[ ! `cat $workingdir/$file` == `cat /etc/udev/rules.d/$file` ]]; then
-        cat $workingdir/$file >> /etc/udev/rules.d/$file
+if [[ $mountok == 0 ]]; then
+    # wenn nicht vorhanden backup-Verzeichnis anlegen
+    if [[ ! -d /mnt/udevsync/rdbackups ]]; then
+	mkdir /mnt/udevsync/rdbackups
     fi
+
+    # wenn nicht vorhanden backup-Verzeichnis anlegen
+    if [[ ! -d /mnt/udevsync/bin ]]; then
+	mkdir /mnt/udevsync/bin
+    fi
+
+    # DasiScript auf die Platte kopieren
+    cp $workingdir/rdbackup /mnt/udevsync/bin/rdbackup
+    chmod ug+x /mnt/udevsync/bin/rdbackup
+    chown root.root /mnt/udevsync/bin/rdbackup
+
+    #echo $hdisk,$partition
+    # UDEV-Identifikationsparameter ermitteln
+    partsize=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTR{size}|cut -d "=" -f 3|tr -d '"'`
+    contserial=`udevadm info -a -p /sys/block/$hdisk/$partition|grep ATTRS{serial}|head -n1|cut -d "=" -f 3|tr -d '"'`
+
+    echo "Gefundenes Merkmal Partitionsgröße: $partsize"
+    echo "Gefundenes Merkmal Seriennummer: $contserial"
+
+    # UDEV-Regel vorbereiten
+    file="80-backupdisk.rules"
+    cp $workingdir/$file.template $workingdir/$file
+
+    # Werte ändern 
+    strings="serialnr%$contserial"
+    changevalues $workingdir $file "$strings"
+
+    strings="partsize%$partsize"
+    changevalues $workingdir $file "$strings"
+
+    if [[ ! -f /etc/udev/rules.d/$file ]]; then
+	cp $workingdir/$file /etc/udev/rules.d/
+    else
+	if [[ ! `cat $workingdir/$file` == `cat /etc/udev/rules.d/$file` ]]; then
+	    cat $workingdir/$file >> /etc/udev/rules.d/$file
+	fi
+    fi
+
+    rm -f $workingdir/$file
+
+    # Laufwerk aushängen
+    umount /dev/$partition
+
+    echo "Datensicherungsplatte hinzugefügt"
+
+else
+    echo "Die Partition der Sicherungsfestplatte ist nicht formatiert.\nProgramm wird abgebrochen"
+    exit 1
 fi
 
-rm -f $workingdir/$file
-
-# Laufwerk aushängen
-umount /dev/$partition
-
-echo "Datensicherungsplatte hinzugefügt"
+    
