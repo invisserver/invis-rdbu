@@ -8,7 +8,7 @@
 # Auf dem Zielhost muss ebenfalls rdiff-backup (V. >= 1.2.8)
 # installiert sein.
 
-# Version 0.17
+# Version 0.18
 
 # (c) 2012,2013,2014,2017 Stefan Schaefer -- invis-server.org
 # License GPLv3
@@ -95,15 +95,16 @@ if [[ $netbuactive == "1" ]]; then
     echo "Datensynchronisation vom $datum" > $logfile
     echo -e `date +%s` > $controldirectory/status
 
-    # Image des Bootsektors erstellen
-    bootdev=$(cat /etc/fstab|grep "/boot" | cut -d " " -f 1)
-    mv $bootpartdir/bootpart.img $bootpartdir/bootpart.img.old
-    dd if=$bootdev of=$bootpartdir/bootpart.img
+    # Bootpartition sichern, wenn Script vorhanden
+    if [[ -f /usr/bin/safebootpart ]]; then
+	safebootpart
+    fi
 
     # Zieldaten ermitteln
     targetdir=$(getconfvalue "targetDir" "2" "$conffile")
     targethost=$(getconfvalue "targetHost" "2" "$conffile")
-
+    targetuser=$(getconfvalue "buServerUser" "2" "$conffile")
+    
     if [[ $targethost == "localhost" ]] || [[ $mounttype != "none" ]]; then
 	# Sicherungsverzeichnis erstellen
 	if [[ ! -d  $targetdir ]]; then
@@ -164,8 +165,9 @@ if [[ $netbuactive == "1" ]]; then
 
 	echo "$svolume $ecode" >> $controldirectory/status
 
-	# Fuellstandsdatei kopieren 
-	scp root@$targethost:$targetdir/full $controldirectory/full >> $logfile 2>&1
+	# Fuellstand ermitteln 
+	targetmountpoint=`echo "$targetdir" |cut -d "/" -f2`
+	ssh $targetuser@$targethost 'df -h' |grep srv |tr -s " " |cut -d " " -f5|tr -d "%" > $controldirectory/full
 
 	if [[ -f $controldirectory/full ]]; then
 	    usedspace=`cat $controldirectory/full`

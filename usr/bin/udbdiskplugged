@@ -1,6 +1,6 @@
 #!/bin/bash
 # Helferscript fuer udev-gestuetzte Datensicherung
-
+# Das Script wird vom udev-Daemon ausgefuehrt, wenn eine Sicherungsfestplatte erkannt wurde.
 # Variablen
 plugfile="/var/spool/results/backup/plugged"
 

@@ -1,7 +1,11 @@
 ## invis-rdbu
-(c) 2014-2016 Stefan Schäfer -- invis-server.org
-Version 0.17
+(c) 2014-2017 Stefan Schäfer -- invis-server.org
+Version 0.18
 Lizenz: GPLv3
+
+Version 0.18 verbessert die Registrierung einer Sicherungs-
+festplatte und passt das Server-Backup-Script dem der Platten-
+sicherung an.
 
 Version 0.17 bringt mit dasimonitor mit, welches nach einer
 fehlgeschlagenen Datensicherung verwaiste Mounts und Snapshot-

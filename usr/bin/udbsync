@@ -1,5 +1,5 @@
 #!/bin/bash
-# UDEV-Event Script fuer invis-Server Disk-Backup
+# Script zum Ausloesen eines invis-Server Disk-Backups
 # Das Script reagiert darauf, wenn eine vorbereitete externe
 # Datensicherungsplatte an den Server angeschlossen wird.
 # Es wird zunaechst geprueft, ob eine neue Version des 
@@ -9,6 +9,7 @@
 
 # (c) 2011-2016 Stefan Schaefer -- invis-server.org
 # License GPLv3
+# Version 0.18
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

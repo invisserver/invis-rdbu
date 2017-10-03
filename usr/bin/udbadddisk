@@ -1,10 +1,10 @@
 #!/bin/bash
-# installer für udevbu
-# Version 1.2
-# (c) 2009,2014,2016 Stefan Schäfer invis-server.org
+# Script zur Registrierung einer Datensicherungsfestplatte für das Sicherungssystem invis-rdbu.
+# Version 0.18
+# (c) 2009-2017 Stefan Schäfer invis-server.org
 # License: GPLv3
 # Questions: stefan@invis-server.org
-# Have a look at wiki.invis-server.org and forum.invis-server.org
+# Have a look at wiki.invis-server.org and progress.opensuse.org/projects/invis-server
 
 # Arbeitsverzeichnis
 workingdir="/var/lib/invis-rdbu"
@@ -17,13 +17,29 @@ changevalues() {
     mv $1/$2.new $1/$2
 }
 
-# Festplatte und Partition der Dasi-Festplatte ermitteln
-hdisk=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f6|tr -d ":"`
-partition=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f7`
+if [[ -z $1 ]]; then
+    # Festplatte und Partition der Dasi-Festplatte ermitteln
+    hdisk=`journalctl --no-pager --system --since -3h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f6|tr -d ":"`
+    partition=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f7`
+else
+    # Testen, ob der angegebene Partitionsname 4 Zeichen lang ist
+    if (( ${#1} == 4 )) then
+	partition=$1
+	hdisk=`echo $1|tr -d [:digit:]`
+    else
+	echo "Fehlerhafte Partitionsbezeichnung"
+	exit 1
+    fi
+fi
 
-echo "Gefundene Festplatte: $hdisk"
-echo "Gefundene Partition: $partition"
-sleep 3
+if [[ -z $partition ]]; then
+    echo "Es wurde keine Datensicherungsfestplatte gefunden, die innerhalb der letzten 3 Stunden mit dem Server verbunden wurde."
+    exit 1
+else
+    echo "Gefundene Festplatte: $hdisk"
+    echo "Gefundene Partition: $partition"
+    sleep 3
+fi
 
 if [[ -n $partition ]]; then
     ismounted2=`cat /etc/mtab|grep "/dev/$partition"`
@@ -98,4 +114,3 @@ else
     exit 1
 fi
 
-    
