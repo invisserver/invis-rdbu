@@ -23,7 +23,7 @@ if [[ -z $1 ]]; then
     partition=`journalctl --no-pager --system --since -1h |grep "sd[a-z]: sd[a-z][1-9]"|tail -n1|tr -s " "|cut -d " " -f7`
 else
     # Testen, ob der angegebene Partitionsname 4 Zeichen lang ist
-    if (( ${#1} == 4 )) then
+    if (( ${#1} == 4 )); then
 	partition=$1
 	hdisk=`echo $1|tr -d [:digit:]`
     else
