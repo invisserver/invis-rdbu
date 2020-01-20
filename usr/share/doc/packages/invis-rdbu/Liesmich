@@ -110,3 +110,9 @@ räumt jetzt das Script "dasimonitor" auf.
 
 Es können in den Konfigurationsdateien Optionen für rdiff-backup 
 gesetzt werden.
+
+============================================================================
+
+Das Script rdiff-backup-regress.sh von Dominic Raferd steht abweichend vom
+Rest des Paketes unter Apache License 2.0.
+
